@@ -1,0 +1,428 @@
+/**
+ * Test setup file for Vitest
+ * Configures testing environment and global utilities
+ */
+
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import '@testing-library/jest-dom';
+
+// Automatically cleanup after each test
+afterEach(() => {
+  cleanup();
+});
+
+// Mock window.matchMedia for JSDOM compatibility
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {}, // deprecated
+    removeListener: () => {}, // deprecated
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => true,
+  }),
+});
+
+// Mock ResizeObserver for JSDOM compatibility
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock requestAnimationFrame and cancelAnimationFrame
+global.requestAnimationFrame = (cb: FrameRequestCallback) => {
+  return setTimeout(cb, 0) as unknown as number;
+};
+
+global.cancelAnimationFrame = (id: number) => {
+  clearTimeout(id);
+};
+
+    const handlers: Record<string, Function> = {};
+    let mockFilter: (event: Event) => boolean = () => true;
+    let mockWheelDelta: (event: WheelEvent) => number = () => 1;
+    let mockScaleExtent: [number, number] = [0.1, 10];
+    
+    const mockZoom = {
+      scaleExtent: vi.fn((extent: [number, number]) => {
+        mockScaleExtent = extent;
+        return mockZoom;
+      }),
+      filter: vi.fn((filter: (event: Event) => boolean) => {
+        mockFilter = filter;
+        return mockZoom;
+      }),
+      wheelDelta: vi.fn((delta: (event: WheelEvent) => number) => {
+        mockWheelDelta = delta;
+        return mockZoom;
+      }),
+      on: vi.fn((type: string, handler: Function) => {
+        handlers[type] = handler;
+        return mockZoom;
+      }),
+      transform: vi.fn(),
+      translateBy: vi.fn(),
+      scaleBy: vi.fn(),
+      scaleTo: vi.fn(),
+      translateTo: vi.fn(),
+    };
+    
+    return mockZoom;
+  };
+  
+  // Mock select to handle .call() properly
+  const mockSelect = vi.fn((selector: any) => {
+    const element = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    
+    // Create a mock selection object with all common d3-selection methods
+    const createMockSelection = (elem: any, isMulti: boolean = false): any => {
+      const selection: any = {
+        node: () => elem,
+        nodes: () => (isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem]),
+        size: () => (isMulti ? (Array.isArray(elem) ? elem.length : 1) : (elem ? 1 : 0)),
+        empty: vi.fn(function() {
+          if (elem) elem.innerHTML = '';
+          return selection;
+        }),
+        each: vi.fn(function(fn: Function) {
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any, i: number) => {
+            if (el) fn.call(el, (el as any).__data__, i, elements);
+          });
+          return selection;
+        }),
+        call: vi.fn(function(fn: any, ...args: any[]) {
+          if (fn && typeof fn === 'function') {
+            fn(selection, ...args);
+          } else if (fn && fn.transform) {
+            fn.transform(selection, ...args);
+          }
+          return selection;
+        }),
+        on: vi.fn(function() { return selection; }),
+        attr: vi.fn(function(name: string, value?: any) {
+          if (arguments.length < 2) {
+            return elem && elem.getAttribute(name);
+          }
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any) => {
+            if (el && el.setAttribute) el.setAttribute(name, String(value));
+          });
+          return selection;
+        }),
+        style: vi.fn(function(name: string, value?: any) {
+          if (arguments.length < 2) {
+            return elem && (elem as HTMLElement).style[name as any];
+          }
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any) => {
+            if (el && el.style) (el as HTMLElement).style[name as any] = value;
+          });
+          return selection;
+        }),
+        classed: vi.fn(function(name: string, value?: boolean) {
+          if (arguments.length < 2) {
+            return elem && elem.classList.contains(name);
+          }
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any) => {
+            if (el && el.classList) {
+              if (value) {
+                el.classList.add(name);
+              } else {
+                el.classList.remove(name);
+              }
+            }
+          });
+          return selection;
+        }),
+        text: vi.fn(function(value?: string) {
+          if (arguments.length < 1) {
+            return elem && elem.textContent;
+          }
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any) => {
+            if (el) el.textContent = value || '';
+          });
+          return selection;
+        }),
+        html: vi.fn(function(value?: string) {
+          if (arguments.length < 1) {
+            return elem && elem.innerHTML;
+          }
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any) => {
+            if (el) el.innerHTML = value || '';
+          });
+          return selection;
+        }),
+        append: vi.fn(function(type: string) {
+          // SVG elements need createElementNS, HTML elements use createElement
+          const svgElements = ['svg', 'g', 'rect', 'circle', 'ellipse', 'line', 'path', 'polygon', 'polyline', 'text', 'tspan'];
+          
+          // Check if this is an enter selection with entering data
+          const enterData = (selection as any).__enterData__;
+          
+          if (enterData && enterData.length > 0) {
+            // This is an enter selection - create elements for each data item
+            const newElements: any[] = [];
+            const parentElement = elem || document.createElement('div'); // Ensure we have a parent
+            enterData.forEach((d: any, i: number) => {
+              const newElement = svgElements.includes(type.toLowerCase())
+                ? document.createElementNS('http://www.w3.org/2000/svg', type)
+                : document.createElement(type);
+              // Bind data to the new element
+              (newElement as any).__data__ = d;
+              if (parentElement && typeof parentElement.appendChild === 'function') {
+                parentElement.appendChild(newElement);
+              }
+              newElements.push(newElement);
+            });
+            const newSelection = createMockSelection(newElements, newElements.length > 1);
+            // Preserve enter data for chained appends
+            (newSelection as any).__enterData__ = enterData;
+            return newSelection;
+          } else if (isMulti) {
+            // For multi-selection, append an element to each element in the selection
+            const elements = Array.isArray(elem) ? elem : [elem];
+            const newElements: any[] = [];
+            elements.forEach((el: any, i: number) => {
+              const newElement = svgElements.includes(type.toLowerCase())
+                ? document.createElementNS('http://www.w3.org/2000/svg', type)
+                : document.createElement(type);
+              if (el && typeof el.appendChild === 'function') {
+                el.appendChild(newElement);
+              }
+              // Copy data from parent element if present
+              if ((el as any).__data__) {
+                (newElement as any).__data__ = (el as any).__data__;
+              }
+              newElements.push(newElement);
+            });
+            return createMockSelection(newElements, true);
+          } else {
+            // For single selection, append one element
+            const newElement = svgElements.includes(type.toLowerCase())
+              ? document.createElementNS('http://www.w3.org/2000/svg', type)
+              : document.createElement(type);
+            if (elem && elem.appendChild) {
+              elem.appendChild(newElement);
+            }
+            // Copy data from parent element if present
+            if ((elem as any).__data__) {
+              (newElement as any).__data__ = (elem as any).__data__;
+            }
+            return createMockSelection(newElement, false);
+          }
+        }),
+        insert: vi.fn(function(type: string, before?: string) {
+          // SVG elements need createElementNS, HTML elements use createElement
+          const svgElements = ['svg', 'g', 'rect', 'circle', 'ellipse', 'line', 'path', 'polygon', 'polyline', 'text', 'tspan'];
+          const newElement = svgElements.includes(type.toLowerCase())
+            ? document.createElementNS('http://www.w3.org/2000/svg', type)
+            : document.createElement(type);
+          if (elem && elem.insertBefore) {
+            const referenceNode = before ? elem.querySelector(before) : elem.firstChild;
+            elem.insertBefore(newElement, referenceNode);
+          }
+          return createMockSelection(newElement, false);
+        }),
+        remove: vi.fn(function() {
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any) => {
+            if (el && el.parentNode) {
+              el.parentNode.removeChild(el);
+            }
+          });
+          return selection;
+        }),
+        datum: vi.fn(function(value?: any) {
+          if (arguments.length < 1) {
+            return elem && (elem as any).__data__;
+          }
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any) => {
+            if (el) (el as any).__data__ = value;
+          });
+          return selection;
+        }),
+        data: vi.fn(function(value?: any[], key?: (d: any, i?: number) => string) {
+          if (arguments.length < 1) {
+            return elem && (elem as any).__data__;
+          }
+          
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          const dataArray = value || [];
+          
+          // Match data to elements (simplified - in real d3 this uses the key function)
+          const matched: any[] = [];
+          const entering: any[] = [];
+          
+          dataArray.forEach((d: any, i: number) => {
+            if (elements[i]) {
+              // Element exists - this is an update
+              (elements[i] as any).__data__ = d;
+              matched.push(elements[i]);
+            } else {
+              // No element - this is entering data
+              entering.push(d);
+            }
+          });
+          
+          // Create enter selection - it should be multi if there are multiple entering items
+          // The enter selection needs to be bound to the parent element so appends work
+          const enterSelection = createMockSelection(elem, entering.length > 1);
+          // Store the entering data on the selection
+          (enterSelection as any).__enterData__ = entering;
+          enterSelection.merge = vi.fn(function(otherSelection?: any) {
+            return selection;
+          });
+          
+          // Create exit selection for elements without data
+          const exiting = elements.slice(dataArray.length);
+          const exitSelection = createMockSelection(exiting, exiting.length > 1);
+          exitSelection.merge = vi.fn(function(otherSelection?: any) {
+            return selection;
+          });
+          
+          // Update selection returns the matched elements
+          const updateSelection = createMockSelection(matched, matched.length > 1);
+          updateSelection.merge = vi.fn(function(otherSelection?: any) {
+            return selection;
+          });
+          
+          return {
+            enter: vi.fn(() => enterSelection),
+            exit: vi.fn(() => exitSelection),
+            update: vi.fn(() => updateSelection),
+          };
+        }),
+        property: vi.fn(function(name: string, value?: any) {
+          if (arguments.length < 2) {
+            return elem && (elem as any)[name];
+          }
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          elements.forEach((el: any) => {
+            if (el) (el as any)[name] = value;
+          });
+          return selection;
+        }),
+        filter: vi.fn(function(filterFn: any) {
+          if (typeof filterFn === 'string') {
+            // CSS selector filter
+            const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+            const filtered = elements.filter((el: any) => el && el.matches && el.matches(filterFn));
+            return createMockSelection(filtered, true);
+          } else if (typeof filterFn === 'function') {
+            // Function filter
+            const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+            const filtered = elements.filter((el: any, i: number) => {
+              return el && filterFn.call(el, (el as any).__data__, i, elements);
+            });
+            return createMockSelection(filtered, true);
+          }
+          return selection;
+        }),
+        selectAll: vi.fn(function(selector: string) {
+          const elements = isMulti ? (Array.isArray(elem) ? elem : [elem]) : [elem];
+          const allSelected: any[] = [];
+          elements.forEach((el: any) => {
+            if (el && el.querySelectorAll) {
+              const selected = Array.from(el.querySelectorAll(selector));
+              allSelected.push(...selected);
+            }
+          });
+          return createMockSelection(allSelected, true);
+        }),
+        select: vi.fn(function(selector: string) {
+          if (isMulti) {
+            // For multi-element selection, select first match in each element
+            const elements = Array.isArray(elem) ? elem : [elem];
+            const selected: any[] = [];
+            elements.forEach((el: any) => {
+              if (el && el.querySelector) {
+                const child = el.querySelector(selector);
+                if (child) selected.push(child);
+              }
+            });
+            return createMockSelection(selected, true);
+          } else {
+            // For single element, select first match
+            const child = elem && elem.querySelector ? elem.querySelector(selector) : null;
+            return createMockSelection(child, false);
+          }
+        }),
+        transition: vi.fn(function() {
+          return {
+            duration: vi.fn(function() { return this; }),
+            ease: vi.fn(function() { return this; }),
+            delay: vi.fn(function() { return this; }),
+            call: vi.fn(function(fn: any, ...args: any[]) {
+              if (fn && typeof fn === 'function') {
+                fn(this, ...args);
+              } else if (fn && fn.transform) {
+                fn.transform(this, ...args);
+              }
+              return this;
+            }),
+            attr: vi.fn(function() { return this; }),
+            style: vi.fn(function() { return this; }),
+            on: vi.fn(function() { return this; }),
+            end: vi.fn(() => Promise.resolve()),
+          };
+        }),
+        merge: vi.fn(function(otherSelection?: any) {
+          // In d3, merge combines this selection with another
+          // For testing purposes, just return this selection
+          return selection;
+        }),
+      };
+      
+      return selection;
+    };
+    
+    return createMockSelection(element, false);
+  });
+  
+  return {
+    ...actual,
+    zoom: vi.fn(() => createMockZoomBehavior()),
+    select: mockSelect,
+  };
+});
+
+// Mock window.matchMedia for JSDOM compatibility
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {}, // deprecated
+    removeListener: () => {}, // deprecated
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => true,
+  }),
+});
+
+// Mock ResizeObserver for JSDOM compatibility
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
+// Mock requestAnimationFrame and cancelAnimationFrame
+global.requestAnimationFrame = (cb: FrameRequestCallback) => {
+  return setTimeout(cb, 0) as unknown as number;
+};
+
+global.cancelAnimationFrame = (id: number) => {
+  clearTimeout(id);
+};
