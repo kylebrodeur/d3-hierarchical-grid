@@ -12,17 +12,17 @@ import { DEFAULT_THEME } from '../src/config/defaults';
 // Partial mock: Only mock d3 zoom, keep selection and other APIs real
 vi.mock('d3', async () => {
   const actual = await import('d3');
-  
+
   const createMockZoomBehavior = () => {
-    const handlers: Record<string, Function> = {};
-    
+    const handlers: Record<string, (...args: unknown[]) => unknown> = {};
+
     const mockZoom = {
       scaleExtent: vi.fn(() => mockZoom),
       translateExtent: vi.fn(() => mockZoom),
       extent: vi.fn(() => mockZoom),
       filter: vi.fn(() => mockZoom),
       wheelDelta: vi.fn(() => mockZoom),
-      on: vi.fn((type: string, handler: Function) => {
+      on: vi.fn((type: string, handler: (...args: unknown[]) => unknown) => {
         handlers[type] = handler;
         return mockZoom;
       }),
@@ -36,10 +36,13 @@ vi.mock('d3', async () => {
       touchable: vi.fn(() => true),
       clickDistance: vi.fn(() => mockZoom),
     };
-    
-    return Object.assign(vi.fn(() => mockZoom), mockZoom);
+
+    return Object.assign(
+      vi.fn(() => mockZoom),
+      mockZoom,
+    );
   };
-  
+
   return {
     ...actual,
     zoom: vi.fn(() => createMockZoomBehavior()),
@@ -306,12 +309,9 @@ describe.skip('useZoom', () => {
   });
 
   it('should update when config changes', () => {
-    const { rerender } = renderHook(
-      ({ options }) => useZoom(options),
-      {
-        initialProps: { options: mockOptions },
-      }
-    );
+    const { rerender } = renderHook(({ options }) => useZoom(options), {
+      initialProps: { options: mockOptions },
+    });
 
     const newConfig = {
       ...DEFAULT_THEME.zoom,

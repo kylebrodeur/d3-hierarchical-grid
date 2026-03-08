@@ -13,6 +13,7 @@ import { DEFAULT_THEME, DEFAULT_TYPOGRAPHY_CONFIG } from '../config/defaults';
 import type {
   HierarchicalGridProps,
   LayoutResult,
+  LayoutItem,
   GridControls,
   FitToViewOptions,
   GridTheme,
@@ -138,7 +139,7 @@ export function HierarchicalGrid({
       updateHeadingStyles(svg, transform.k, DEFAULT_TYPOGRAPHY_CONFIG);
 
       // Update item content based on zoom level
-      const itemSelection = svg.selectAll<SVGGElement, any>('g.item');
+      const itemSelection = svg.selectAll<SVGGElement, LayoutItem>('g.item');
       updateItemContent(itemSelection, transform.k, mergedTheme.item, {
         imageUrlGetter: (item: HierarchyItem) => item.imageUrl || '',
         initialsGetter: (item: HierarchyItem) => {
@@ -305,7 +306,7 @@ export function HierarchicalGrid({
     if (!svgRef.current || !isMounted) return;
 
     const svg = d3.select(svgRef.current);
-    const itemSelection = svg.selectAll<SVGGElement, any>('g.item');
+    const itemSelection = svg.selectAll<SVGGElement, LayoutItem>('g.item');
 
     // Clear all highlights
     itemSelection
@@ -317,7 +318,7 @@ export function HierarchicalGrid({
     // Apply highlight to selected item
     if (selectedItem) {
       itemSelection
-        .filter((d: any) => d.itemId === selectedItem.id)
+        .filter((d: LayoutItem) => d.itemId === selectedItem.id)
         .select<SVGRectElement>('rect.item-background')
         .attr('fill', mergedTheme.item.selectedBackgroundColor)
         .attr('stroke', '#2196f3')
@@ -404,7 +405,7 @@ export function HierarchicalGrid({
 
     const svg = d3.select(svgRef.current);
     svg
-      .selectAll<SVGRectElement, any>('rect.item-background')
+      .selectAll<SVGRectElement, LayoutItem>('rect.item-background')
       .attr('fill', mergedTheme.item.backgroundColor)
       .attr('stroke', mergedTheme.item.borderColor)
       .attr('stroke-width', mergedTheme.item.borderWidth);

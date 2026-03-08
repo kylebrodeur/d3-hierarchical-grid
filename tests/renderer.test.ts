@@ -1,7 +1,7 @@
 /**
  * Test suite for renderer utilities
  * Tests the rendering functions from src/utils/renderer.ts
- * 
+ *
  * Simplified approach: Verify functions work without throwing and return D3 selections.
  * We don't deeply inspect DOM structure created by D3 - that's brittle and unnecessary.
  */
@@ -46,7 +46,7 @@ describe('Renderer Utilities', () => {
       ];
 
       const container = svg.append('g').attr('class', 'sections');
-      
+
       expect(() => {
         renderSections(container, sections, DEFAULT_THEME.section);
       }).not.toThrow();
@@ -75,7 +75,7 @@ describe('Renderer Utilities', () => {
 
     it('should handle empty sections array', () => {
       const container = svg.append('g').attr('class', 'sections');
-      
+
       expect(() => {
         renderSections(container, [], DEFAULT_THEME.section);
       }).not.toThrow();
@@ -104,7 +104,7 @@ describe('Renderer Utilities', () => {
       ];
 
       const container = svg.append('g').attr('class', 'sections');
-      
+
       expect(() => {
         renderSections(container, sections, DEFAULT_THEME.section);
       }).not.toThrow();
@@ -157,7 +157,7 @@ describe('Renderer Utilities', () => {
       ];
 
       const container = svg.append('g').attr('class', 'sections');
-      
+
       expect(() => {
         renderSections(container, sections, DEFAULT_THEME.section);
       }).not.toThrow();
@@ -177,7 +177,7 @@ describe('Renderer Utilities', () => {
       ];
 
       const container = svg.append('g').attr('class', 'sections');
-      
+
       expect(() => {
         renderSections(container, sections, DEFAULT_THEME.section);
       }).not.toThrow();
@@ -197,7 +197,7 @@ describe('Renderer Utilities', () => {
       ];
 
       const container = svg.append('g').attr('class', 'sections');
-      
+
       expect(() => {
         renderSections(container, sections, DEFAULT_THEME.section);
       }).not.toThrow();

@@ -34,7 +34,7 @@ import type {
 export function computeLayout(
   items: HierarchyItem[],
   config?: GridConfig | null,
-  theme?: Partial<GridTheme>
+  theme?: Partial<GridTheme>,
 ): LayoutResult {
   // Early return for empty data
   if (!items || items.length === 0) {
@@ -93,17 +93,24 @@ export function computeLayout(
 
       // Calculate items in this group
       const itemsPerRow = Math.floor(
-        (groupStyles.minWidth - groupStyles.padding * 2) / (itemStyles.width + itemStyles.gap)
+        (groupStyles.minWidth - groupStyles.padding * 2) / (itemStyles.width + itemStyles.gap),
       );
       const rows = Math.ceil(groupData.items.length / itemsPerRow);
 
       // Calculate group dimensions
       const actualItemsPerRow = Math.min(itemsPerRow, groupData.items.length);
       const groupContentWidth = actualItemsPerRow * (itemStyles.width + itemStyles.gap);
-      const groupWidth = Math.max(groupStyles.minWidth, groupContentWidth + groupStyles.padding * 2);
+      const groupWidth = Math.max(
+        groupStyles.minWidth,
+        groupContentWidth + groupStyles.padding * 2,
+      );
       const groupContentHeight = rows * (itemStyles.height + itemStyles.gap);
       const groupHeight =
-        groupStyles.padding + groupStyles.headerHeight + groupStyles.gap + groupContentHeight + groupStyles.padding;
+        groupStyles.padding +
+        groupStyles.headerHeight +
+        groupStyles.gap +
+        groupContentHeight +
+        groupStyles.padding;
 
       // Check if group fits in current row, otherwise start new row
       if (groupX > 0 && groupX + groupWidth > maxWidth - sectionStyles.padding) {
@@ -202,8 +209,7 @@ export function computeLayout(
     sectionItems.forEach((item) => {
       const parentGroup = sectionGroups.find((g) => g.id === item.groupId);
       if (parentGroup) {
-        item.x =
-          parentGroup.x + groupStyles.padding + item.relativeX;
+        item.x = parentGroup.x + groupStyles.padding + item.relativeX;
         item.y =
           parentGroup.y +
           groupStyles.padding +
@@ -243,7 +249,7 @@ export function computeLayout(
  */
 function groupItemsHierarchically(
   items: HierarchyItem[],
-  config?: GridConfig | null
+  config?: GridConfig | null,
 ): {
   sections: Array<{
     key: string;
@@ -259,20 +265,13 @@ function groupItemsHierarchically(
   }>;
 } {
   // Build section definitions map
-  const sectionDefs = new Map(
-    config?.sections?.map((s) => [s.key, s]) || []
-  );
+  const sectionDefs = new Map(config?.sections?.map((s) => [s.key, s]) || []);
 
   // Build group definitions map
-  const groupDefs = new Map(
-    config?.groups?.map((g) => [g.key, g]) || []
-  );
+  const groupDefs = new Map(config?.groups?.map((g) => [g.key, g]) || []);
 
   // Group items by section, then by group
-  const sectionMap = new Map<
-    string,
-    Map<string, HierarchyItem[]>
-  >();
+  const sectionMap = new Map<string, Map<string, HierarchyItem[]>>();
 
   items.forEach((item) => {
     const sectionKey = item.section || 'default';

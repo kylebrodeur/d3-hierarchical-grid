@@ -228,9 +228,7 @@ describe('computeLayout', () => {
 
   it('should respect GridConfig group definitions', () => {
     const config: GridConfig = {
-      groups: [
-        { key: 'Group A', label: 'First Group', description: 'A test group' },
-      ],
+      groups: [{ key: 'Group A', label: 'First Group', description: 'A test group' }],
     };
 
     const result = computeLayout(mockItems, config);

@@ -2,13 +2,28 @@
   "name": "@kylebrodeur/d3-hierarchical-grid",
   "version": "0.1.0",
   "description": "A D3-based hierarchical grid visualization component for React",
+  "keywords": [
+    "d3",
+    "react",
+    "visualization",
+    "grid",
+    "hierarchical",
+    "zoom",
+    "svg",
+    "typescript"
+  ],
   "private": false,
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/kylebrodeur/d3-hierarchical-grid.git"
@@ -21,9 +36,12 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "lint": "eslint .",
-    "test": "vitest",
-    "typecheck": "tsc --noEmit"
+    "lint": "eslint src tests",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
     "d3-selection": "^3.0.0",
@@ -35,6 +53,7 @@
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^6.1.0",
     "@testing-library/react": "^14.1.0",
     "@testing-library/react-hooks": "^8.0.1",
@@ -43,11 +62,15 @@
     "@types/d3-zoom": "^3.0.8",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
-    "eslint": "^8.0.0",
+    "eslint": "^10.0.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "globals": "^17.3.0",
     "jsdom": "^23.0.0",
+    "prettier": "^3.8.1",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "typescript": "^5.0.0",
+    "typescript-eslint": "^8.55.0",
     "vitest": "^1.0.0"
   },
   "engines": {

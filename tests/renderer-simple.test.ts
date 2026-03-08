@@ -1,7 +1,7 @@
 /**
  * Test suite for renderer utilities
  * Tests the rendering functions from src/utils/renderer.ts
- * 
+ *
  * Ultra-simplified approach: Just verify functions exist and can be called.
  * We don't test D3's internal behavior - that's D3's responsibility.
  */

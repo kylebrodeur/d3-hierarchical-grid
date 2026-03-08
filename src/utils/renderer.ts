@@ -30,7 +30,7 @@ import type {
 export function renderSections(
   parentSelection: d3.Selection<SVGGElement, unknown, null, undefined>,
   sections: LayoutSection[],
-  styles: SectionStyles
+  styles: SectionStyles,
 ): d3.Selection<SVGGElement, LayoutSection, SVGGElement, unknown> {
   // Use data join pattern with enter/update/exit
   const sectionSelection = parentSelection
@@ -92,7 +92,7 @@ export function renderSections(
     .attr('class', 'section-content')
     .attr(
       'transform',
-      `translate(${styles.padding}, ${styles.padding + styles.headerHeight + styles.gap})`
+      `translate(${styles.padding}, ${styles.padding + styles.headerHeight + styles.gap})`,
     );
 
   // Merge enter and update selections
@@ -142,7 +142,7 @@ export function renderSections(
 export function renderGroups(
   sectionSelection: d3.Selection<SVGGElement, LayoutSection, SVGGElement, unknown>,
   groups: LayoutGroup[],
-  styles: GroupStyles
+  styles: GroupStyles,
 ): d3.Selection<SVGGElement, LayoutGroup, SVGGElement, unknown> {
   // For each section, bind groups that belong to it
   const groupSelection = sectionSelection
@@ -150,7 +150,7 @@ export function renderGroups(
     .selectAll<SVGGElement, LayoutGroup>('g.group')
     .data(
       (sectionData) => groups.filter((g) => g.sectionId === sectionData.id),
-      (d) => d.id
+      (d) => d.id,
     );
 
   // Remove old groups
@@ -221,7 +221,7 @@ export function renderGroups(
     .attr('class', 'group-content')
     .attr(
       'transform',
-      `translate(${styles.padding}, ${styles.padding + styles.headerHeight + styles.gap})`
+      `translate(${styles.padding}, ${styles.padding + styles.headerHeight + styles.gap})`,
     );
 
   // Merge enter and update selections
@@ -280,7 +280,7 @@ export function renderItems(
   groupSelection: d3.Selection<SVGGElement, LayoutGroup, SVGGElement, unknown>,
   items: LayoutItem[],
   styles: ItemStyles,
-  _zoomLevel: number
+  _zoomLevel: number,
 ): d3.Selection<SVGGElement, LayoutItem, SVGGElement, unknown> {
   // For each group, bind items that belong to it
   const itemSelection = groupSelection
@@ -288,7 +288,7 @@ export function renderItems(
     .selectAll<SVGGElement, LayoutItem>('g.item')
     .data(
       (groupData) => items.filter((item) => item.groupId === groupData.id),
-      (d) => d.id
+      (d) => d.id,
     );
 
   // Remove old items
@@ -449,7 +449,7 @@ export function updateItemContent(
   options?: {
     imageUrlGetter?: (item: HierarchyItem) => string;
     initialsGetter?: (item: HierarchyItem) => string;
-  }
+  },
 ): void {
   const { imageUrlGetter, initialsGetter } = options || {};
 
@@ -544,7 +544,7 @@ export function updateHeadingStyles(
     thresholds: number[];
     fontSizes: { sections: number[]; groups: number[] };
     fontWeights: { sections: string[]; groups: string[] };
-  }
+  },
 ): void {
   const { thresholds, fontSizes, fontWeights } = config;
 

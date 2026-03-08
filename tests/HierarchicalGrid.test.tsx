@@ -16,7 +16,7 @@ vi.mock('d3', async () => {
   const actual = await import('d3');
 
   const createMockZoomBehavior = () => {
-    const handlers: Record<string, Function> = {};
+    const handlers: Record<string, (...args: unknown[]) => unknown> = {};
 
     const mockZoom = {
       scaleExtent: vi.fn(() => mockZoom),
@@ -24,7 +24,7 @@ vi.mock('d3', async () => {
       extent: vi.fn(() => mockZoom),
       filter: vi.fn(() => mockZoom),
       wheelDelta: vi.fn(() => mockZoom),
-      on: vi.fn((type: string, handler: Function) => {
+      on: vi.fn((type: string, handler: (...args: unknown[]) => unknown) => {
         handlers[type] = handler;
         return mockZoom;
       }),

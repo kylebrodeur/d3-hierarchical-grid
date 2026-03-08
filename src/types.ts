@@ -372,7 +372,7 @@ export interface HierarchicalGridProps {
   onItemClick?: (
     item: HierarchyItem,
     clickPosition?: ClickPosition,
-    layoutPosition?: LayoutPosition
+    layoutPosition?: LayoutPosition,
   ) => void;
   /** Callback when an item is hovered or hover ends */
   onItemHover?: (item: HierarchyItem | null) => void;

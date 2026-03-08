@@ -133,12 +133,8 @@ describe('Type Exports', () => {
 
   it('should export GridConfig interface', () => {
     const config: GridConfig = {
-      sections: [
-        { key: 'section-1', label: 'Section 1', order: 1 },
-      ],
-      groups: [
-        { key: 'group-1', label: 'Group 1' },
-      ],
+      sections: [{ key: 'section-1', label: 'Section 1', order: 1 }],
+      groups: [{ key: 'group-1', label: 'Group 1' }],
     };
 
     expect(config).toBeDefined();
