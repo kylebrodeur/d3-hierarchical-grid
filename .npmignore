@@ -1,0 +1,35 @@
+# Source files
+src/
+tests/
+
+# Config files
+tsconfig.json
+vitest.config.ts
+eslint.config.mjs
+.lintstagedrc.js
+.markdownlint.json
+
+# Development files
+.github/
+.agent/
+examples/
+docs/
+*.test.ts
+*.test.tsx
+*.spec.ts
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Misc
+node_modules/
+.DS_Store
+*.log
+.env
+.env.*

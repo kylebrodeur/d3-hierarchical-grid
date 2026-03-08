@@ -1,31 +1,28 @@
-# @workspace/d3-hierarchical-grid
+# @kylebrodeur/d3-hierarchical-grid
 
-A React component library for rendering hierarchical data structures using D3.js in flexible grid layouts.
+A React + D3 component library for rendering zoomable, pannable hierarchical item grids organized by sections and groups.
 
 ## Description
 
-`@workspace/d3-hierarchical-grid` provides a powerful and flexible way to visualize hierarchical data in React applications. It combines the visualization capabilities of D3.js with responsive grid layouts, making it easy to create interactive and scalable hierarchical displays.
+`@kylebrodeur/d3-hierarchical-grid` provides a high-performance SVG grid visualization built with D3.js and React. Items are organized into named groups and sections, with smooth zoom/pan, progressive detail rendering at different zoom levels, and programmatic control via an exposed `GridControls` interface.
 
 ### Features
 
-- 🎨 **D3-powered visualizations** - Leverage D3.js for smooth animations and data-driven rendering
-- ⚛️ **React 18+ compatible** - Built with modern React patterns and hooks
-- 📊 **Hierarchical layouts** - Optimized for nested data structures
-- 🎯 **TypeScript first** - Full type safety with comprehensive TypeScript definitions
-- 🎪 **Flexible grid system** - Responsive and customizable grid layouts
-- ♿ **Accessible** - Built with accessibility in mind
+- **D3-powered rendering** — SVG sections, groups, and items rendered via D3 data joins
+- **React 18+ compatible** — Functional component with hooks
+- **Hierarchical layout** — Auto-organizes items into sections → groups → items
+- **Zoom & pan** — Mouse wheel zoom, drag-to-pan, and programmatic `zoomIn`/`zoomOut`/`resetZoom`/`panBy`
+- **Progressive detail** — Renders item images/text conditionally based on zoom level
+- **TypeScript first** — Full strict-mode types and exported declarations
+- **Responsive** — Auto fits content on mount and container resize
+- **SSR safe** — Guards against server-side rendering issues
 
 ## Installation
 
 ```bash
-# Using pnpm (recommended for monorepos)
-pnpm add @workspace/d3-hierarchical-grid
-
-# Using npm
-npm install @workspace/d3-hierarchical-grid
-
-# Using yarn
-yarn add @workspace/d3-hierarchical-grid
+pnpm add @kylebrodeur/d3-hierarchical-grid
+# or
+npm install @kylebrodeur/d3-hierarchical-grid
 ```
 
 **Peer Dependencies:**
@@ -37,83 +34,89 @@ yarn add @workspace/d3-hierarchical-grid
 ## Basic Usage
 
 ```tsx
-import { HierarchicalGrid } from '@workspace/d3-hierarchical-grid'
-import type { HierarchicalData } from '@workspace/d3-hierarchical-grid'
+import { HierarchicalGrid } from '@kylebrodeur/d3-hierarchical-grid';
+import type { HierarchyItem, GridControls } from '@kylebrodeur/d3-hierarchical-grid';
 
-const data: HierarchicalData = {
-  id: 'root',
-  name: 'Root Node',
-  children: [
-    {
-      id: 'child-1',
-      name: 'Child 1',
-      children: []
-    },
-    {
-      id: 'child-2',
-      name: 'Child 2',
-      children: []
-    }
-  ]
-}
+const items: HierarchyItem[] = [
+  { id: '1', name: 'Item A', group: 'Group 1', section: 'Section A' },
+  { id: '2', name: 'Item B', group: 'Group 1', section: 'Section A' },
+  { id: '3', name: 'Item C', group: 'Group 2', section: 'Section B' },
+];
 
 function App() {
+  const [controls, setControls] = useState<GridControls | null>(null);
+
   return (
-    <HierarchicalGrid
-      data={data}
-      width={800}
-      height={600}
-      onNodeClick={(node) => console.log('Clicked:', node)}
-    />
-  )
+    <div style={{ width: '100%', height: '600px' }}>
+      <HierarchicalGrid
+        items={items}
+        onControlsReady={setControls}
+        onItemClick={(item) => console.log('Clicked:', item.name)}
+      />
+      {controls && (
+        <div>
+          <button onClick={controls.zoomIn}>+</button>
+          <button onClick={controls.zoomOut}>-</button>
+          <button onClick={controls.resetZoom}>Reset</button>
+        </div>
+      )}
+    </div>
+  );
 }
 ```
 
 ## API Overview
 
-### Components
+### `<HierarchicalGrid />`
 
-#### `<HierarchicalGrid />`
+Main visualization component.
 
-The main component for rendering hierarchical data in a grid layout.
+| Prop | Type | Description |
+|------|------|-------------|
+| `items` | `HierarchyItem[]` | Data items to render |
+| `config?` | `GridConfig` | Section/group configuration |
+| `theme?` | `Partial<GridTheme>` | Visual theme overrides |
+| `selectedItem?` | `HierarchyItem` | Currently selected item (highlighted) |
+| `onItemClick?` | `(item: HierarchyItem, pos: ClickPosition) => void` | Item click handler |
+| `onItemHover?` | `(item: HierarchyItem \| null) => void` | Item hover handler |
+| `onBackgroundClick?` | `(pos: LayoutPosition) => void` | Background click handler |
+| `onTransformChange?` | `(transform: ZoomTransform) => void` | Zoom/pan change handler |
+| `onControlsReady?` | `(controls: GridControls) => void` | Exposes zoom/pan control methods |
+| `onInitialFitComplete?` | `() => void` | Fires after initial fit-to-view |
+| `className?` | `string` | Additional CSS class |
 
-**Props:**
+### `useZoom(options)`
 
-- `data: HierarchicalData` - The hierarchical data structure to visualize
-- `width?: number` - Width of the grid (default: 100%)
-- `height?: number` - Height of the grid (default: 100%)
-- `onNodeClick?: (node: HierarchicalNode) => void` - Callback when a node is clicked
-- `onNodeHover?: (node: HierarchicalNode | null) => void` - Callback when a node is hovered
-- `theme?: GridTheme` - Custom theme configuration
-- `className?: string` - Additional CSS classes
+Custom hook for D3 zoom behavior. Returns `{ zoomIn, zoomOut, resetZoom, setTransform, panBy, currentTransform, zoomBehavior }`.
 
-### Types
+### `computeLayout(items, config?, theme?)`
 
-#### `HierarchicalData`
+Pure function. Computes the full grid layout from `HierarchyItem[]`, returning a `LayoutResult` with positioned sections, groups, items, and bounds.
 
-Represents the structure of hierarchical data.
+### Key Types
 
 ```typescript
-interface HierarchicalData {
-  id: string
-  name: string
-  value?: number
-  children?: HierarchicalData[]
-  metadata?: Record<string, unknown>
+interface HierarchyItem {
+  id: string;
+  name: string;
+  group: string;
+  section?: string;
+  description?: string;
+  imageUrl?: string;
+  url?: string;
+  metadata?: Record<string, unknown>;
+  position?: { x: number | null; y: number | null };
 }
-```
 
-#### `GridTheme`
-
-Configuration for styling the grid.
-
-```typescript
-interface GridTheme {
-  nodeColor?: string
-  borderColor?: string
-  textColor?: string
-  backgroundColor?: string
-  highlightColor?: string
+interface GridControls {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
+  fitToView: (options?: FitToViewOptions) => void;
+  panBy: (dx: number, dy: number, duration?: number) => void;
+  setTransform: (transform: ZoomTransform, animate?: boolean) => void;
+  getCurrentTransform: () => ZoomTransform | null;
+  clearHighlight: () => void;
 }
 ```
 
@@ -122,22 +125,13 @@ interface GridTheme {
 See [AGENTS.md](./AGENTS.md) for detailed development guidelines and agent integration notes.
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Build the package
-pnpm run build
-
-# Run tests
-pnpm test
-
-# Run type checking
-pnpm run typecheck
-
-# Lint code
-pnpm run lint
+pnpm install       # Install dependencies
+pnpm build         # Build to dist/
+pnpm test          # Run tests
+pnpm typecheck     # Type check
+pnpm lint          # Lint
 ```
 
 ## License
 
-MIT © Workspace
+MIT © Kyle Brodeur
